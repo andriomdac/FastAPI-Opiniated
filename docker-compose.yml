@@ -1,0 +1,29 @@
+services:
+  
+  # api:
+  #   working_dir: /app/
+  #   build: ./api/
+  #   restart: always
+  #   depends_on:
+  #     - db
+  # ports:
+  #   - 8000:8000
+  #   command: "fastapi dev main.py"
+
+  db:
+    image: postgres:17
+    volumes:
+      - /postgresql/:/database/
+    environment:
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+      POSTGRES_USER: postgres
+    ports:
+      - 5432:5432
+    restart: always
+
+  adminer:
+    image: adminer
+    restart: always
+    ports:
+      - 8080:8080
