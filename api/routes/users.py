@@ -11,7 +11,8 @@ from schemas.users import (
 from models.users import User
 import logging
 
-from utils.security import get_password_hash, get_user_or_404, authenticate_user_or_403
+from utils.security import get_password_hash, authenticate_user_or_403
+from utils.users import get_user_or_404
 
 
 user_router = APIRouter(prefix="/api")
