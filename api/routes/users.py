@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException, Response, status
+from fastapi import APIRouter, Depends, HTTPException, Request, Response, status
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from config.database import get_db
@@ -11,15 +11,15 @@ from schemas.users import (
 from models.users import User
 import logging
 
-from utils.security import get_password_hash, authenticate_user_or_403
+from utils.security import get_password_hash, authenticate_user_or_401
 from utils.users import get_user_or_404
 
 
-user_router = APIRouter(prefix="/api")
+user_router = APIRouter(prefix="/api/users")
 
 
 @user_router.post(
-    "/users/",
+    "/",
     response_model=UserCreateResponseSchema,
     status_code=status.HTTP_201_CREATED,
 )
@@ -45,14 +45,14 @@ async def create_user(
         raise
 
 
-@user_router.put("/users/{user_id}/", status_code=status.HTTP_204_NO_CONTENT)
+@user_router.put("/{user_id}/", status_code=status.HTTP_204_NO_CONTENT)
 async def update_user_password(
     user_id: int,
     payload: UserPasswordUpdateRequestSchema,
     db: AsyncSession = Depends(get_db),
 ):
     user = await get_user_or_404(user_id=user_id, db=db)
-    authenticate_user_or_403(user=user, password=payload.current_password)
+    authenticate_user_or_401(user=user, password=payload.current_password)
     user.password = get_password_hash(password=payload.new_password)
 
     try:
@@ -66,9 +66,7 @@ async def update_user_password(
 
 
 @user_router.get(
-    "/users/",
-    response_model=list[UserListResponseSchema],
-    status_code=status.HTTP_200_OK,
+    "/", response_model=list[UserListResponseSchema], status_code=status.HTTP_200_OK
 )
 async def list_users(db: AsyncSession = Depends(get_db)):
     qs = await db.execute(select(User))
@@ -76,7 +74,7 @@ async def list_users(db: AsyncSession = Depends(get_db)):
     return users
 
 
-@user_router.delete("/users/{user_id}/", status_code=status.HTTP_204_NO_CONTENT)
+@user_router.delete("/{user_id}/", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user(user_id: int, db: AsyncSession = Depends(get_db)):
     user = await get_user_or_404(user_id=user_id, db=db)
     try:
